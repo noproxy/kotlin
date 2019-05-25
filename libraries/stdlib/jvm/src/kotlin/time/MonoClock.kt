@@ -5,8 +5,7 @@
 
 package kotlin.time
 
-public actual object MonoClock : LongReadingClock(), Clock { // TODO: interface should not be required here
+public actual object MonoClock : LongReadingClock(unit = DurationUnit.NANOSECONDS), Clock { // TODO: interface should not be required here
     override fun reading(): Long = System.nanoTime()
     override fun toString(): String = "Clock(System.nanoTime())"
-    override val unit: DurationUnit = DurationUnit.NANOSECONDS
 }
