@@ -97,10 +97,10 @@ val klass = KmClass().apply {
     flags = flagsOf(Flag.IS_PUBLIC)
 
     // Adding one public primary constructor
-    constructors.add(KmConstructor(flagsOf(Flag.IS_PUBLIC, Flag.Constructor.IS_PRIMARY)).apply {
+    constructors += KmConstructor(flagsOf(Flag.IS_PUBLIC, Flag.Constructor.IS_PRIMARY)).apply {
         // Setting the JVM signature (for example, to be used by kotlin-reflect)
         signature = JvmMethodSignature("<init>", "()V")
-    })
+    }
 
     ...
 }

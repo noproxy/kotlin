@@ -53,15 +53,15 @@ class MetadataSmokeTest {
         val klass = KmClass().apply {
             name = "Hello"
             flags = flagsOf(Flag.IS_PUBLIC)
-            constructors.add(KmConstructor(flagsOf(Flag.IS_PUBLIC, Flag.Constructor.IS_PRIMARY)).apply {
+            constructors += KmConstructor(flagsOf(Flag.IS_PUBLIC, Flag.Constructor.IS_PRIMARY)).apply {
                 signature = JvmMethodSignature("<init>", "()V")
-            })
-            functions.add(KmFunction(flagsOf(Flag.IS_PUBLIC, Flag.Function.IS_DECLARATION), "hello").apply {
+            }
+            functions += KmFunction(flagsOf(Flag.IS_PUBLIC, Flag.Function.IS_DECLARATION), "hello").apply {
                 returnType = KmType(flagsOf()).apply {
                     classifier = KmClassifier.Class("kotlin/String")
                 }
                 signature = JvmMethodSignature("hello", "()Ljava/lang/String;")
-            })
+            }
         }
 
         val header = KotlinClassMetadata.Class.Writer().apply(klass::accept).write().header
