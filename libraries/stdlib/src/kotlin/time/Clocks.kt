@@ -7,9 +7,14 @@ package kotlin.time
 
 import kotlin.js.JsName
 
+/**
+ * The most precise clock available in the platform, whose readings increase monotonically over time.
+ */
 public expect object MonoClock : Clock
 
-
+/**
+ * An abstract class used to implement clocks that return their readings as [Long] values in the specified [unit].
+ */
 public abstract class LongReadingClock(protected val unit: DurationUnit) : Clock {
     protected abstract fun reading(): Long
 
@@ -19,6 +24,9 @@ public abstract class LongReadingClock(protected val unit: DurationUnit) : Clock
     }
 }
 
+/**
+ * An abstract class used to implement clocks that return their readings as [Double] values in the specified [unit].
+ */
 public abstract class DoubleReadingClock(protected val unit: DurationUnit) : Clock {
     protected abstract fun reading(): Double
 
@@ -28,8 +36,9 @@ public abstract class DoubleReadingClock(protected val unit: DurationUnit) : Clo
     }
 }
 
-
-
+/**
+ * A clock, whose readings can be preset and changed manually. It is useful as a predictable source of time in tests.
+ */
 public class TestClock(
     @JsName("readingValue")
     var reading: Long = 0L,

@@ -9,6 +9,19 @@ import kotlin.math.abs
 
 private val storageUnit = DurationUnit.NANOSECONDS
 
+/**
+ * Represents the amount of time one instant of time is away from another instant.
+ *
+ * A negative duration is possible in a situation when the second instant is earlier than the first one.
+ * An infinite duration value [Duration.INFINITE] can be used to represent infinite timeouts.
+ *
+ * To construct a duration use either the extension function [toDuration] available on [Int], [Long] and [Double] numeric types,
+ * or the extension properties [hours], [minutes], [seconds] and so on.
+ *
+ * To get the value of this duration expressed in the specified [duration units][DurationUnit]
+ * use the functions [toInt], [toLong] and [toDouble]
+ * or the properties [inHours], [inMinutes], [inSeconds], [inNanoseconds] and so on.
+ */
 @Suppress("NON_PUBLIC_PRIMARY_CONSTRUCTOR_OF_INLINE_CLASS")
 public inline class Duration internal constructor(internal val _value: Double) : Comparable<Duration> {
 // TODO: backend fails on init block, wait for KT-28055
