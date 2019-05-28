@@ -1,7 +1,7 @@
 MODULE common-1-1 { platform=[JVM, Native]; root=common-1-1 }
 MODULE common-2-1 { platform=[JVM, Native]; root=common-2-1 }
 MODULE common-2-2 { platform=[JVM, Native]; root=common-2-2 }
-MODULE common-3-1 { platform=[JVM, Native]; root=common-3-2 }
+MODULE common-3-1 { platform=[JVM, Native]; root=common-3-1 }
 MODULE common-3-2 { platform=[JVM, Native]; root=common-3-2 }
 
 MODULE native { platform=[Native]; root=native }

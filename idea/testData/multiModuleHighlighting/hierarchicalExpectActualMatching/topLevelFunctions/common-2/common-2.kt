@@ -1,17 +1,17 @@
 package sample
 
-actual fun x1(): List<Int> = listOf(1)
+actual fun case_1(): List<Int> = listOf(1)
 
-actual fun x2(): Nothing = null!!
+actual fun case_2(): Nothing = null!!
 
-expect fun Number.x2(): Int
+expect fun Number.case_5(): Int
 
-expect inline fun <T> T.x3(): T
+expect inline fun <T> T.case_14(): T
 
-expect fun x4(): Int
+expect fun case_7(): Int
 
-expect fun <T> T.x5(): T
+expect fun <T> T.case_8(): T
 
-expect fun x6(): Int
+expect fun case_9(): Int
 
-actual fun <T> MutableList<out T>.x2() = null <!UNCHECKED_CAST("Nothing?", "T")!>as T<!>
+actual fun <T> MutableList<out T>.case_3() = null <!UNCHECKED_CAST("Nothing?", "T")!>as T<!>

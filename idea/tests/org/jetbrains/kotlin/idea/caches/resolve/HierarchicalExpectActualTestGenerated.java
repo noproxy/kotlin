@@ -64,11 +64,6 @@ public class HierarchicalExpectActualTestGenerated extends AbstractHierarchicalE
         runTest("idea/testData/multiModuleHighlighting/hierarchicalExpectActualMatching/duplicateActualsImplicit/");
     }
 
-    @TestMetadata("test")
-    public void testTest() throws Exception {
-        runTest("idea/testData/multiModuleHighlighting/hierarchicalExpectActualMatching/test/");
-    }
-
     @TestMetadata("classes")
     public void testClasses() throws Exception {
         runTest("idea/testData/multiModuleHighlighting/hierarchicalExpectActualMatching/classes/");

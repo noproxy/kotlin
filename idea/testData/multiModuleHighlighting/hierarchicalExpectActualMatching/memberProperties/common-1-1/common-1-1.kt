@@ -1,9 +1,9 @@
 package sample
 
-expect class A1 {
+expect class Case1 {
     val x: Number
 }
 
-expect class A2<T> {
+expect class Case2<T> {
     var x: T
 }
