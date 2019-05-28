@@ -7,15 +7,16 @@ package org.jetbrains.kotlinx.serialization.compiler.diagnostic
 
 import org.jetbrains.kotlin.descriptors.ClassDescriptor
 import org.jetbrains.kotlin.descriptors.DeclarationDescriptor
+import org.jetbrains.kotlin.descriptors.ModuleDescriptor
 import org.jetbrains.kotlin.descriptors.PropertyDescriptor
 import org.jetbrains.kotlin.diagnostics.DiagnosticFactory0
 import org.jetbrains.kotlin.diagnostics.reportFromPlugin
 import org.jetbrains.kotlin.js.resolve.diagnostics.findPsi
-import org.jetbrains.kotlin.psi.KtAnnotationEntry
-import org.jetbrains.kotlin.psi.KtDeclaration
+import org.jetbrains.kotlin.psi.*
 import org.jetbrains.kotlin.resolve.BindingTrace
 import org.jetbrains.kotlin.resolve.checkers.DeclarationChecker
 import org.jetbrains.kotlin.resolve.checkers.DeclarationCheckerContext
+import org.jetbrains.kotlin.types.KotlinType
 import org.jetbrains.kotlin.util.slicedMap.Slices
 import org.jetbrains.kotlin.util.slicedMap.WritableSlice
 import org.jetbrains.kotlinx.serialization.compiler.backend.common.AbstractSerialGenerator
@@ -73,25 +74,44 @@ class SerializationPluginDeclarationChecker : DeclarationChecker {
 
     private fun analyzePropertiesSerializers(trace: BindingTrace, serializableClass: ClassDescriptor, props: List<SerializableProperty>) {
         val generatorContextForAnalysis = object : AbstractSerialGenerator(trace.bindingContext, serializableClass) {}
-        // todo: recursive check for prop type arguments (e.g. List<NonSerializableType>)
         props.forEach {
-            val serializer = it.serializableWith?.toClassDescriptor ?: generatorContextForAnalysis.findTypeSerializerOrContext(
-                it.module,
-                it.type,
-                it.descriptor.annotations,
-                it.descriptor.findPsi()
-            )
+            val serializer = it.serializableWith?.toClassDescriptor
+            val ktType = (it.descriptor.findPsi() as? KtCallableDeclaration)?.typeReference ?: return@forEach
             if (serializer != null) {
+                val element = ktType.typeElement ?: return
+                generatorContextForAnalysis.checkTypeArguments(it.module, it.type, element, trace)
                 trace.record(SERIALIZER_FOR_PROPERTY, it.descriptor, serializer)
             } else {
-                if (it.genericIndex != null) return@forEach // properties with `T` types do not have dedicated serializers
-                // todo: report only on property type, not on a whole prop for better-looking?
-                val psi = it.descriptor.findPsi() ?: return@forEach
-                trace.reportFromPlugin(
-                    SerializationErrors.SERIALIZER_NOT_FOUND.on(psi),
-                    SerializationPluginErrorsRendering
-                )
+                generatorContextForAnalysis.checkType(it.module, it.type, ktType, trace)
             }
+        }
+    }
+
+    private fun AbstractSerialGenerator.checkTypeArguments(
+        module: ModuleDescriptor,
+        type: KotlinType,
+        element: KtTypeElement,
+        trace: BindingTrace
+    ) {
+        type.arguments.forEachIndexed { i, it -> checkType(module, it.type, element.typeArgumentsAsTypes[i], trace) }
+    }
+
+    private fun AbstractSerialGenerator.checkType(
+        module: ModuleDescriptor,
+        type: KotlinType,
+        ktType: KtTypeReference,
+        trace: BindingTrace
+    ) {
+        if (type.genericIndex != null) return
+        val element = ktType.typeElement ?: return
+        val serializerForType = findTypeSerializerOrContext(module, type)
+        if (serializerForType != null) {
+            checkTypeArguments(module, type, element, trace)
+        } else {
+            trace.reportFromPlugin(
+                SerializationErrors.SERIALIZER_NOT_FOUND.on(element),
+                SerializationPluginErrorsRendering
+            )
         }
     }
 
