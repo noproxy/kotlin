@@ -10,25 +10,25 @@ package kotlinx.metadata
 import kotlinx.metadata.impl.extensions.*
 
 interface KmDeclarationContainer {
-    var functions: MutableList<KmFunction>
-    var properties: MutableList<KmProperty>
-    var typeAliases: MutableList<KmTypeAlias>
+    val functions: MutableList<KmFunction>
+    val properties: MutableList<KmProperty>
+    val typeAliases: MutableList<KmTypeAlias>
 }
 
 class KmClass : KmClassVisitor(), KmDeclarationContainer {
     var flags: Flags = flagsOf()
     lateinit var name: ClassName
-    var typeParameters: MutableList<KmTypeParameter> = ArrayList(0)
-    var supertypes: MutableList<KmType> = ArrayList(1)
-    override var functions: MutableList<KmFunction> = ArrayList()
-    override var properties: MutableList<KmProperty> = ArrayList()
-    override var typeAliases: MutableList<KmTypeAlias> = ArrayList(0)
-    var constructors: MutableList<KmConstructor> = ArrayList(1)
+    val typeParameters: MutableList<KmTypeParameter> = ArrayList(0)
+    val supertypes: MutableList<KmType> = ArrayList(1)
+    override val functions: MutableList<KmFunction> = ArrayList()
+    override val properties: MutableList<KmProperty> = ArrayList()
+    override val typeAliases: MutableList<KmTypeAlias> = ArrayList(0)
+    val constructors: MutableList<KmConstructor> = ArrayList(1)
     var companionObject: String? = null
-    var nestedClasses: MutableList<String> = ArrayList(0)
-    var enumEntries: MutableList<String> = ArrayList(0)
-    var sealedSubclasses: MutableList<ClassName> = ArrayList(0)
-    var versionRequirements: MutableList<KmVersionRequirement> = ArrayList(0)
+    val nestedClasses: MutableList<String> = ArrayList(0)
+    val enumEntries: MutableList<String> = ArrayList(0)
+    val sealedSubclasses: MutableList<ClassName> = ArrayList(0)
+    val versionRequirements: MutableList<KmVersionRequirement> = ArrayList(0)
 
     private val extensions: List<KmClassExtension> =
         MetadataExtensions.INSTANCES.map(MetadataExtensions::createClassExtension)
@@ -97,9 +97,9 @@ class KmClass : KmClassVisitor(), KmDeclarationContainer {
 }
 
 class KmPackage : KmPackageVisitor(), KmDeclarationContainer {
-    override var functions: MutableList<KmFunction> = ArrayList()
-    override var properties: MutableList<KmProperty> = ArrayList()
-    override var typeAliases: MutableList<KmTypeAlias> = ArrayList(0)
+    override val functions: MutableList<KmFunction> = ArrayList()
+    override val properties: MutableList<KmProperty> = ArrayList()
+    override val typeAliases: MutableList<KmTypeAlias> = ArrayList(0)
 
     private val extensions: List<KmPackageExtension> =
         MetadataExtensions.INSTANCES.map(MetadataExtensions::createPackageExtension)
@@ -138,8 +138,8 @@ class KmLambda : KmLambdaVisitor() {
 }
 
 class KmConstructor(var flags: Flags) : KmConstructorVisitor() {
-    var valueParameters: MutableList<KmValueParameter> = ArrayList()
-    var versionRequirements: MutableList<KmVersionRequirement> = ArrayList(0)
+    val valueParameters: MutableList<KmValueParameter> = ArrayList()
+    val versionRequirements: MutableList<KmVersionRequirement> = ArrayList(0)
 
     private val extensions: List<KmConstructorExtension> =
         MetadataExtensions.INSTANCES.map(MetadataExtensions::createConstructorExtension)
@@ -165,11 +165,11 @@ class KmFunction(
     var flags: Flags,
     var name: String
 ) : KmFunctionVisitor() {
-    var typeParameters: MutableList<KmTypeParameter> = ArrayList(0)
+    val typeParameters: MutableList<KmTypeParameter> = ArrayList(0)
     var receiverParameterType: KmType? = null
-    var valueParameters: MutableList<KmValueParameter> = ArrayList()
+    val valueParameters: MutableList<KmValueParameter> = ArrayList()
     lateinit var returnType: KmType
-    var versionRequirements: MutableList<KmVersionRequirement> = ArrayList(0)
+    val versionRequirements: MutableList<KmVersionRequirement> = ArrayList(0)
     var contract: KmContract? = null
 
     private val extensions: List<KmFunctionExtension> =
@@ -214,11 +214,11 @@ class KmProperty(
     var getterFlags: Flags,
     var setterFlags: Flags
 ) : KmPropertyVisitor() {
-    var typeParameters: MutableList<KmTypeParameter> = ArrayList(0)
+    val typeParameters: MutableList<KmTypeParameter> = ArrayList(0)
     var receiverParameterType: KmType? = null
     var setterParameter: KmValueParameter? = null
     lateinit var returnType: KmType
-    var versionRequirements: MutableList<KmVersionRequirement> = ArrayList(0)
+    val versionRequirements: MutableList<KmVersionRequirement> = ArrayList(0)
 
     private val extensions: List<KmPropertyExtension> =
         MetadataExtensions.INSTANCES.map(MetadataExtensions::createPropertyExtension)
@@ -256,11 +256,11 @@ class KmTypeAlias(
     var flags: Flags,
     var name: String
 ) : KmTypeAliasVisitor() {
-    var typeParameters: MutableList<KmTypeParameter> = ArrayList(0)
+    val typeParameters: MutableList<KmTypeParameter> = ArrayList(0)
     lateinit var underlyingType: KmType
     lateinit var expandedType: KmType
-    var annotations: MutableList<KmAnnotation> = ArrayList(0)
-    var versionRequirements: MutableList<KmVersionRequirement> = ArrayList(0)
+    val annotations: MutableList<KmAnnotation> = ArrayList(0)
+    val versionRequirements: MutableList<KmVersionRequirement> = ArrayList(0)
 
     override fun visitTypeParameter(flags: Flags, name: String, id: Int, variance: KmVariance): KmTypeParameterVisitor =
         KmTypeParameter(flags, name, id, variance).addTo(typeParameters)
@@ -314,7 +314,7 @@ class KmTypeParameter(
     var id: Int,
     var variance: KmVariance
 ) : KmTypeParameterVisitor() {
-    var upperBounds: MutableList<KmType> = ArrayList(1)
+    val upperBounds: MutableList<KmType> = ArrayList(1)
 
     private val extensions: List<KmTypeParameterExtension> =
         MetadataExtensions.INSTANCES.map(MetadataExtensions::createTypeParameterExtension)
@@ -334,7 +334,7 @@ class KmTypeParameter(
 
 class KmType(var flags: Flags) : KmTypeVisitor() {
     lateinit var classifier: KmClassifier
-    var arguments: MutableList<KmTypeProjection> = ArrayList(0)
+    val arguments: MutableList<KmTypeProjection> = ArrayList(0)
     var abbreviatedType: KmType? = null
     var outerType: KmType? = null
     var flexibleTypeUpperBound: KmFlexibleTypeUpperBound? = null
@@ -422,7 +422,7 @@ class KmVersionRequirement : KmVersionRequirementVisitor() {
 }
 
 class KmContract : KmContractVisitor() {
-    var effects: MutableList<KmEffect> = ArrayList(1)
+    val effects: MutableList<KmEffect> = ArrayList(1)
 
     override fun visitEffect(type: KmEffectType, invocationKind: KmEffectInvocationKind?): KmEffectVisitor =
         KmEffect(type, invocationKind).addTo(effects)
@@ -437,7 +437,7 @@ class KmEffect(
     var type: KmEffectType,
     var invocationKind: KmEffectInvocationKind?
 ) : KmEffectVisitor() {
-    var constructorArguments: MutableList<KmEffectExpression> = ArrayList(1)
+    val constructorArguments: MutableList<KmEffectExpression> = ArrayList(1)
     var conclusion: KmEffectExpression? = null
 
     override fun visitConstructorArgument(): KmEffectExpressionVisitor =
@@ -458,8 +458,8 @@ class KmEffectExpression : KmEffectExpressionVisitor() {
     var parameterIndex: Int? = null
     var constantValue: KmConstantValue? = null
     var isInstanceType: KmType? = null
-    var andArguments: MutableList<KmEffectExpression> = ArrayList(0)
-    var orArguments: MutableList<KmEffectExpression> = ArrayList(0)
+    val andArguments: MutableList<KmEffectExpression> = ArrayList(0)
+    val orArguments: MutableList<KmEffectExpression> = ArrayList(0)
 
     override fun visit(flags: Flags, parameterIndex: Int?) {
         this.flags = flags

@@ -159,8 +159,8 @@ abstract class KmModuleVisitor(private val delegate: KmModuleVisitor? = null) {
 }
 
 class KmModule : KmModuleVisitor() {
-    var packageParts: MutableMap<String, KmPackageParts> = LinkedHashMap()
-    var annotations: MutableList<KmAnnotation> = ArrayList(0)
+    val packageParts: MutableMap<String, KmPackageParts> = LinkedHashMap()
+    val annotations: MutableList<KmAnnotation> = ArrayList(0)
 
     override fun visitPackageParts(fqName: String, fileFacades: List<String>, multiFileClassParts: Map<String, String>) {
         packageParts[fqName] = KmPackageParts(fileFacades.toMutableList(), multiFileClassParts.toMutableMap())
@@ -179,6 +179,6 @@ class KmModule : KmModuleVisitor() {
 }
 
 class KmPackageParts(
-    var fileFacades: MutableList<String>,
-    var multiFileClassParts: MutableMap<String, String>
+    val fileFacades: MutableList<String>,
+    val multiFileClassParts: MutableMap<String, String>
 )

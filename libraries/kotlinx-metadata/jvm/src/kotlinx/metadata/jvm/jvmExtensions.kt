@@ -8,11 +8,8 @@ package kotlinx.metadata.jvm
 import kotlinx.metadata.*
 import kotlinx.metadata.jvm.impl.jvm
 
-var KmClass.localDelegatedProperties: MutableList<KmProperty>
+val KmClass.localDelegatedProperties: MutableList<KmProperty>
     get() = jvm.localDelegatedProperties
-    set(value) {
-        jvm.localDelegatedProperties = value
-    }
 
 var KmClass.moduleName: String?
     get() = jvm.moduleName
@@ -26,11 +23,8 @@ var KmClass.anonymousObjectOriginName: String?
         jvm.anonymousObjectOriginName = value
     }
 
-var KmPackage.localDelegatedProperties: MutableList<KmProperty>
+val KmPackage.localDelegatedProperties: MutableList<KmProperty>
     get() = jvm.localDelegatedProperties
-    set(value) {
-        jvm.localDelegatedProperties = value
-    }
 
 var KmPackage.moduleName: String?
     get() = jvm.moduleName
