@@ -8,7 +8,7 @@ package kotlin.time
 import kotlin.contracts.*
 
 /**
- * Executes the given [action] and returns the elapsed duration.
+ * Executes the given [action] and returns the duration of elapsed time interval.
  *
  * The elapsed duration is measured according to [MonoClock].
  */
@@ -21,9 +21,9 @@ public inline fun measureTime(action: () -> Unit): Duration {
 
 
 /**
- * Executes the given [action] and returns the elapsed duration.
+ * Executes the given [action] and returns the duration of elapsed time interval.
  *
- * The elapsed duration is measured according to the specified `this` [Clock] instance.
+ * The duration is measured according to the specified `this` [Clock] instance.
  */
 public inline fun Clock.measureTime(action: () -> Unit): Duration {
     contract {
@@ -37,7 +37,7 @@ public inline fun Clock.measureTime(action: () -> Unit): Duration {
 
 
 /**
- * Data class representing a result of executing an action, along with the elapsed duration.
+ * Data class representing a result of executing an action, along with the duration of elapsed time interval.
  *
  * @property value the result of the action.
  * @property duration the time elapsed to execute the action.
@@ -47,7 +47,7 @@ public data class DurationMeasured<T>(val value: T, val duration: Duration)
 // or runMeasured
 /**
  * Executes the given [action] and returns an instance of [DurationMeasured] class, containing both
- * the result of the [action] execution and the elapsed duration.
+ * the result of the [action] execution and the duration of elapsed time interval.
  *
  * The elapsed duration is measured according to [MonoClock].
  */
@@ -61,7 +61,7 @@ public inline fun <T> withMeasureTime(action: () -> T): DurationMeasured<T> {
 
 /**
  * Executes the given [action] and returns an instance of [DurationMeasured] class, containing both
- * the result of the [action] execution and the elapsed duration.
+ * the result of the [action] execution and the duration of elapsed time interval.
  *
  * The elapsed duration is measured according to the specified `this` [Clock] instance.
  */
