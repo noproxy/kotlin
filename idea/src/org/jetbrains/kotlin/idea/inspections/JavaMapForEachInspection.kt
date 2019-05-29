@@ -21,6 +21,7 @@ import org.jetbrains.kotlin.psi.KtPsiFactory
 import org.jetbrains.kotlin.psi.psiUtil.getStrictParentOfType
 import org.jetbrains.kotlin.resolve.calls.callUtil.getResolvedCall
 import org.jetbrains.kotlin.resolve.calls.callUtil.getType
+import org.jetbrains.kotlin.resolve.calls.tower.NewResolvedCallImpl
 import org.jetbrains.kotlin.resolve.lazy.BodyResolveMode
 import org.jetbrains.kotlin.synthetic.SamAdapterExtensionFunctionDescriptor
 
@@ -37,7 +38,9 @@ class JavaMapForEachInspection : AbstractApplicabilityBasedInspection<KtDotQuali
 
         val context = element.analyze(BodyResolveMode.PARTIAL)
         if (!element.receiverExpression.getType(context).isMap(DefaultBuiltIns.Instance)) return false
-        return callExpression.getResolvedCall(context)?.resultingDescriptor is SamAdapterExtensionFunctionDescriptor
+        val resolvedCall = callExpression.getResolvedCall(context) ?: return false
+        return resolvedCall.resultingDescriptor is SamAdapterExtensionFunctionDescriptor
+                || (resolvedCall is NewResolvedCallImpl<*> && resolvedCall.resolvedCallAtom.argumentsWithConversion.isNotEmpty())
     }
 
     override fun inspectionTarget(element: KtDotQualifiedExpression) = element.callExpression?.calleeExpression ?: element
