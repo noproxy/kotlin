@@ -14,6 +14,7 @@ import org.jetbrains.kotlin.descriptors.ClassDescriptor
 import org.jetbrains.kotlin.descriptors.FunctionDescriptor
 import org.jetbrains.kotlin.idea.caches.resolve.analyze
 import org.jetbrains.kotlin.idea.caches.resolve.getResolutionFacade
+import org.jetbrains.kotlin.idea.codeInsight.forceEnableSamAdapters
 import org.jetbrains.kotlin.idea.resolve.frontendService
 import org.jetbrains.kotlin.idea.util.getResolutionScope
 import org.jetbrains.kotlin.incremental.components.NoLookupLocation
@@ -176,7 +177,7 @@ class RedundantSamConstructorInspection : AbstractKotlinInspection() {
             val originalFunctionDescriptor = functionResolvedCall.resultingDescriptor.original as? FunctionDescriptor ?: return emptyList()
             val containingClass = originalFunctionDescriptor.containingDeclaration as? ClassDescriptor ?: return emptyList()
 
-            val syntheticScopes = functionCall.getResolutionFacade().getFrontendService(SyntheticScopes::class.java)
+            val syntheticScopes = functionCall.getResolutionFacade().getFrontendService(SyntheticScopes::class.java).forceEnableSamAdapters()
 
             // SAM adapters for static functions
             val contributedFunctions = syntheticScopes.collectSyntheticStaticFunctions(containingClass.staticScope)
