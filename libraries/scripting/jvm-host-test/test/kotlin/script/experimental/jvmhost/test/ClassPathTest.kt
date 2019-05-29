@@ -17,31 +17,14 @@ import kotlin.script.experimental.jvm.util.classpathFromClassloader
 
 class ClassPathTest : TestCase() {
 
-    var tempDir: File? = null
-
-    override fun setUp() {
-        tempDir = createTempDir("cp_fat")
-        super.setUp()
-    }
-
-    override fun tearDown() {
-        super.tearDown()
-        tempDir?.deleteRecursively()
-    }
-
     @Test
     fun testExtractFromFat() {
-        val collection = File(tempDir, "col.jar").apply { createCollectionJar(emulatedCollectionFiles, "BOOT-INF") }
+        val collection = createTempFile("col", ".jar").apply { createCollectionJar(emulatedCollectionFiles, "BOOT-INF") }
         val cl = URLClassLoader(arrayOf(collection.toURI().toURL()), null)
-        val cp = classpathFromClassloader(cl, tempDir!!)
-        Assert.assertTrue(cp != null && cp.size > 0)
+        val cp = classpathFromClassloader(cl, true)
+        Assert.assertTrue(cp != null && cp.isNotEmpty())
 
         testUnpackedCollection(cp!!, emulatedCollectionFiles)
-
-        val marker = tempDir!!.listFiles().find { it.extension == "cached" }
-        Assert.assertTrue(marker!!.delete())
-        val cp2 = classpathFromClassloader(cl, tempDir!!)
-        Assert.assertEquals(cp, cp2)
     }
 }
 

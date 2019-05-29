@@ -9,45 +9,47 @@ import org.jetbrains.kotlin.cli.common.repl.KotlinJsr223JvmScriptEngineFactoryBa
 import java.io.File
 import javax.script.ScriptEngine
 import kotlin.script.experimental.api.ScriptCompilationConfiguration
+import kotlin.script.experimental.jvm.JvmScriptCompilationConfigurationBuilder
 import kotlin.script.experimental.jvm.dependenciesFromCurrentContext
 import kotlin.script.experimental.jvm.jvm
+import kotlin.script.experimental.jvm.updateClasspath
+import kotlin.script.experimental.jvm.util.scriptCompilationClasspathFromContext
 import kotlin.script.experimental.jvmhost.createJvmCompilationConfigurationFromTemplate
 import kotlin.script.experimental.jvmhost.createJvmEvaluationConfigurationFromTemplate
 import kotlin.script.experimental.jvmhost.jsr223.KotlinJsr223ScriptEngineImpl
-
-const val JAR_COLLECTIONS_DISABLE_UNPACK_CACHE_PROPERTY = "kotlin.script.disable.jar.collections.unpack.cache"
-const val JAR_COLLECTIONS_UNPACK_CACHE_DIR_PROPERTY = "kotlin.script.jar.collections.unpack.cache.path"
 
 class KotlinJsr223DefaultScriptEngineFactory : KotlinJsr223JvmScriptEngineFactoryBase() {
 
     private val compilationConfiguration = createJvmCompilationConfigurationFromTemplate<KotlinJsr223DefaultScript>()
     private val evaluationConfiguration = createJvmEvaluationConfigurationFromTemplate<KotlinJsr223DefaultScript>()
+    private var lastClassLoader: ClassLoader? = null
+    private var lastClassPath: List<File>? = null
 
-    override fun getScriptEngine(): ScriptEngine {
-        val unpackedJarCollectionsCache =
-            System.getProperty(JAR_COLLECTIONS_UNPACK_CACHE_DIR_PROPERTY)?.let(::File)
-                ?: unpackedJarCollectionsCache
+    @Synchronized
+    protected fun JvmScriptCompilationConfigurationBuilder.dependenciesFromCurrentContext() {
+        val currentClassLoader = Thread.currentThread().contextClassLoader
+        val classPath = if (lastClassLoader == null || lastClassLoader != currentClassLoader) {
+            scriptCompilationClasspathFromContext(
+                classLoader = currentClassLoader,
+                wholeClasspath = true,
+                unpackJarCollections = true
+            ).also {
+                lastClassLoader = currentClassLoader
+                lastClassPath = it
+            }
+        } else lastClassPath!!
+        updateClasspath(classPath)
+    }
 
-        return KotlinJsr223ScriptEngineImpl(
+    override fun getScriptEngine(): ScriptEngine =
+        KotlinJsr223ScriptEngineImpl(
             this,
             ScriptCompilationConfiguration(compilationConfiguration) {
                 jvm {
-                    dependenciesFromCurrentContext(wholeClasspath = true, unpackJarCollectionsTo = unpackedJarCollectionsCache)
+                    dependenciesFromCurrentContext()
                 }
             },
             evaluationConfiguration
         )
-    }
-
-    companion object {
-        val unpackedJarCollectionsCache: File? by lazy {
-            if (System.getProperty(JAR_COLLECTIONS_DISABLE_UNPACK_CACHE_PROPERTY)?.toLowerCase() == "true") null
-            else createTempDir("unpackedJarCache").canonicalFile.also {
-                Runtime.getRuntime().addShutdownHook(Thread {
-                    it.deleteRecursively()
-                })
-            }
-        }
-    }
 }
 

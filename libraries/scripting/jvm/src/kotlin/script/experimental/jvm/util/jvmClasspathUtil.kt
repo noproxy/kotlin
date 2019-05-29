@@ -8,7 +8,6 @@ package kotlin.script.experimental.jvm.util
 import java.io.File
 import java.io.FileInputStream
 import java.io.FileNotFoundException
-import java.lang.IllegalStateException
 import java.net.URL
 import java.net.URLClassLoader
 import java.util.jar.JarInputStream
@@ -50,28 +49,30 @@ internal const val KOTLIN_REFLECT_JAR_PROPERTY = "kotlin.java.reflect.jar"
 internal const val KOTLIN_RUNTIME_JAR_PROPERTY = "kotlin.java.runtime.jar"
 internal const val KOTLIN_SCRIPT_RUNTIME_JAR_PROPERTY = "kotlin.script.runtime.jar"
 
-internal const val JAR_COLLECTIONS_UNPACK_CACHE_LOCK_TIMEOUT_MS_PROPERTY = "kotlin.script.jar.collections.unpack.cache.lock.timeout.ms"
-internal const val JAR_COLLECTIONS_UNPACK_CACHE_LOCK_TIMEOUT_MS_DEFAULT = 10000L
-internal const val JAR_COLLECTIONS_UNPACK_CACHE_LOCK_TIMEOUT_MS_MAX = 600000L
-
 private val validClasspathFilesExtensions = setOf("jar", "zip", "java")
 private val validJarCollectionFilesExtensions = setOf("jar", "war", "zip")
 
-fun classpathFromClassloader(currentClassLoader: ClassLoader, unpackJarCollectionsTo: File? = null): List<File>? {
+fun classpathFromClassloader(currentClassLoader: ClassLoader, unpackJarCollections: Boolean = false): List<File>? {
     val processedJars = hashSetOf<File>()
+    val unpackJarCollectionsDir by lazy {
+        createTempDir("unpackedJarCollections").canonicalFile.also {
+            Runtime.getRuntime().addShutdownHook(Thread {
+                it.deleteRecursively()
+            })
+        }
+    }
     return allRelatedClassLoaders(currentClassLoader).flatMap { classLoader ->
         var classPath = emptySequence<File>()
-        if (unpackJarCollectionsTo != null && JAR_COLLECTIONS_KEY_PATHS.any { classLoader.getResource(it)?.file?.isNotEmpty() == true }) {
+        if (unpackJarCollections && JAR_COLLECTIONS_KEY_PATHS.any { classLoader.getResource(it)?.file?.isNotEmpty() == true }) {
             // if cache dir is specified, find all jar collections (spring boot fat jars and WARs so far, and unpack it accordingly
             val jarCollections = JAR_COLLECTIONS_KEY_PATHS.asSequence().flatMap { currentClassLoader.getResources(it).asSequence() }
-                .distinct()
                 .mapNotNull {
                     it.toContainingFileOrNull()?.takeIf { file ->
                         // additionally mark/check processed collection jars since unpacking is expensive
-                        validJarCollectionFilesExtensions.any { ext -> file.extension == ext } && processedJars.add(file)
+                        file.extension in validJarCollectionFilesExtensions && processedJars.add(file)
                     }
                 }
-            classPath += jarCollections.flatMap { it.unpackJarCollection(unpackJarCollectionsTo) }.filter { it.isValidClasspathFile() }
+            classPath += jarCollections.flatMap { it.unpackJarCollection(unpackJarCollectionsDir) }.filter { it.isValidClasspathFile() }
         }
         classPath += when (classLoader) {
             is URLClassLoader -> {
@@ -90,7 +91,7 @@ fun classpathFromClassloader(currentClassLoader: ClassLoader, unpackJarCollectio
 internal fun URL.toValidClasspathFileOrNull(): File? = toContainingFileOrNull()?.takeIf { it.isValidClasspathFile() }
 
 internal fun File.isValidClasspathFile(): Boolean =
-    isDirectory || (isFile && validClasspathFilesExtensions.any { extension == it })
+    isDirectory || (isFile && extension in validClasspathFilesExtensions)
 
 private fun ClassLoader.classPathFromGetUrlsMethodOrNull(): Sequence<File>? {
     return try {
@@ -104,48 +105,12 @@ private fun ClassLoader.classPathFromGetUrlsMethodOrNull(): Sequence<File>? {
     }
 }
 
-internal fun ClassLoader.classPathFromManifestResourceUrls(): Sequence<File> {
-    val res = getResources(JAR_MANIFEST_RESOURCE_NAME)
-        .asSequence().distinct().mapNotNull { it.toValidClasspathFileOrNull() }
-    return res
-}
+internal fun ClassLoader.classPathFromManifestResourceUrls(): Sequence<File> =
+    getResources(JAR_MANIFEST_RESOURCE_NAME).asSequence().distinct().mapNotNull { it.toValidClasspathFileOrNull() }
 
-private fun File.getCollectionCacheDirectoryName(): String =
-    "${nameWithoutExtension}_${canonicalPath.hashCode()}_${length()}_${lastModified()}"
-
-private fun File.acquireLockFile(timeout: Long, body: File.() -> Boolean) {
-    val startTime = System.currentTimeMillis()
-    while (true) {
-        if (body()) return
-        if (System.currentTimeMillis() - startTime >= timeout) break
-        Thread.sleep(100)
-    }
-    throw IllegalStateException("Jar collections unpacking lock timeout (${System.currentTimeMillis() - startTime}ms) on file: $canonicalPath")
-
-}
-
-private fun File.unpackJarCollection(cacheDir: File): Sequence<File> {
-    val targetName = getCollectionCacheDirectoryName()
-    val targetDir = File(cacheDir, targetName)
-    val markerFile = File(cacheDir, "$targetName.cached")
-    val lockFile = File(cacheDir, "$targetName.lock")
-    val lockTimeout =
-        System.getProperty(JAR_COLLECTIONS_UNPACK_CACHE_LOCK_TIMEOUT_MS_PROPERTY)?.toLongOrNull()
-            ?.takeIf { it in 0..JAR_COLLECTIONS_UNPACK_CACHE_LOCK_TIMEOUT_MS_MAX }
-            ?: JAR_COLLECTIONS_UNPACK_CACHE_LOCK_TIMEOUT_MS_DEFAULT
-    var isError = false
-    lockFile.acquireLockFile(lockTimeout) { !exists() }
-    return if (targetDir.isDirectory && markerFile.exists()) {
-        JAR_COLLECTIONS_CLASSES_PATHS.asSequence().mapNotNull { classesDir ->
-            File(targetDir, classesDir).takeIf { it.isDirectory }
-        } + JAR_COLLECTIONS_LIB_PATHS.asSequence().flatMap {
-            File(targetDir, it).listFiles().orEmpty().asSequence()
-        }
-    } else try {
-        lockFile.apply {
-            acquireLockFile(lockTimeout) { createNewFile() }
-            deleteOnExit()
-        }
+private fun File.unpackJarCollection(rootTempDir: File?): Sequence<File> {
+    val targetDir = createTempDir(nameWithoutExtension, directory = rootTempDir)
+    return try {
         ArrayList<File>().apply {
             JarInputStream(FileInputStream(this@unpackJarCollection)).use { jarInputStream ->
                 for (classesDir in JAR_COLLECTIONS_CLASSES_PATHS) {
@@ -174,12 +139,8 @@ private fun File.unpackJarCollection(cacheDir: File): Sequence<File> {
             }
         }.asSequence()
     } catch (e: Throwable) {
-        isError = true
         targetDir.deleteRecursively()
         throw e
-    } finally {
-        lockFile.delete()
-        if (!isError) markerFile.createNewFile()
     }
 }
 
@@ -263,7 +224,7 @@ fun scriptCompilationClasspathFromContextOrNull(
     vararg keyNames: String,
     classLoader: ClassLoader = Thread.currentThread().contextClassLoader,
     wholeClasspath: Boolean = false,
-    unpackJarCollectionsTo: File? = null
+    unpackJarCollections: Boolean = false
 ): List<File>? {
     fun List<File>.takeAndFilter() = when {
         isEmpty() -> null
@@ -274,7 +235,7 @@ fun scriptCompilationClasspathFromContextOrNull(
     val fromProperty = System.getProperty(KOTLIN_SCRIPT_CLASSPATH_PROPERTY)?.split(File.pathSeparator)?.map(::File)
     if (fromProperty != null) return fromProperty
 
-    return classpathFromClassloader(classLoader, unpackJarCollectionsTo)?.takeAndFilter()
+    return classpathFromClassloader(classLoader, unpackJarCollections)?.takeAndFilter()
         ?: classpathFromClasspathProperty()?.takeAndFilter()
 }
 
@@ -295,12 +256,13 @@ fun scriptCompilationClasspathFromContext(
     vararg keyNames: String,
     classLoader: ClassLoader = Thread.currentThread().contextClassLoader,
     wholeClasspath: Boolean = false,
-    unpackJarCollectionsTo: File? = null
+    unpackJarCollections: Boolean = false
 ): List<File> =
     scriptCompilationClasspathFromContextOrNull(
         *keyNames,
         classLoader = classLoader,
-        wholeClasspath = wholeClasspath
+        wholeClasspath = wholeClasspath,
+        unpackJarCollections = unpackJarCollections
     )
         ?: throw Exception("Unable to get script compilation classpath from context, please specify explicit classpath via \"$KOTLIN_SCRIPT_CLASSPATH_PROPERTY\" property")
 

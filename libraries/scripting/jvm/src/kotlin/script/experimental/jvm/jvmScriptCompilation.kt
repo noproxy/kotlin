@@ -34,20 +34,20 @@ fun JvmScriptCompilationConfigurationBuilder.dependenciesFromClassContext(
 fun JvmScriptCompilationConfigurationBuilder.dependenciesFromCurrentContext(
     vararg libraries: String,
     wholeClasspath: Boolean = false,
-    unpackJarCollectionsTo: File? = null
+    unpackJarCollections: Boolean = false
 ) {
-    dependenciesFromClassloader(*libraries, wholeClasspath = wholeClasspath, unpackJarCollectionsTo = unpackJarCollectionsTo)
+    dependenciesFromClassloader(*libraries, wholeClasspath = wholeClasspath, unpackJarCollections = unpackJarCollections)
 }
 
 fun JvmScriptCompilationConfigurationBuilder.dependenciesFromClassloader(
     vararg libraries: String,
     classLoader: ClassLoader = Thread.currentThread().contextClassLoader,
     wholeClasspath: Boolean = false,
-    unpackJarCollectionsTo: File? = null
+    unpackJarCollections: Boolean = false
 ) {
     updateClasspath(
         scriptCompilationClasspathFromContext(
-            *libraries, classLoader = classLoader, wholeClasspath = wholeClasspath, unpackJarCollectionsTo = unpackJarCollectionsTo
+            *libraries, classLoader = classLoader, wholeClasspath = wholeClasspath, unpackJarCollections = unpackJarCollections
         )
     )
 }
