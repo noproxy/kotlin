@@ -10,8 +10,8 @@ import java.text.DecimalFormat
 import java.text.DecimalFormatSymbols
 import java.util.*
 
-val rootFormatSymbols = DecimalFormatSymbols(Locale.ROOT).apply { exponentSeparator = "e" }
-val precisionFormats = Array<DecimalFormat?>(4) { null }
+private val rootFormatSymbols = DecimalFormatSymbols(Locale.ROOT).apply { exponentSeparator = "e" }
+private val precisionFormats = Array<DecimalFormat?>(4) { null }
 
 private fun createFormatForDecimals(decimals: Int) = DecimalFormat("0", rootFormatSymbols).apply {
     if (decimals > 0) minimumFractionDigits = decimals
