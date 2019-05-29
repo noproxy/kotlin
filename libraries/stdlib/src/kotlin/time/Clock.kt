@@ -35,7 +35,7 @@ public interface ClockMark {
     fun elapsed(): Duration
 
     /**
-     * Returns a clock mark on the same clock that stands ahead this clock mark by the specified [duration].
+     * Returns a clock mark on the same clock that stands ahead of this clock mark by the specified [duration].
      *
      * The returned clock mark is more _late_ when the [duration] is positive, and more _early_ when the [duration] is negative.
      */
