@@ -15,24 +15,24 @@ public expect object MonoClock : Clock
 /**
  * An abstract class used to implement clocks that return their readings as [Long] values in the specified [unit].
  */
-public abstract class LongReadingClock(protected val unit: DurationUnit) : Clock {
-    protected abstract fun reading(): Long
+public abstract class AbstractLongClock(protected val unit: DurationUnit) : Clock {
+    protected abstract fun read(): Long
 
     override fun mark(): ClockMark = object : ClockMark {
-        val startedAt = reading()
-        override fun elapsed(): Duration = (reading() - startedAt).toDuration(this@LongReadingClock.unit)
+        val startedAt = read()
+        override fun elapsed(): Duration = (read() - startedAt).toDuration(this@AbstractLongClock.unit)
     }
 }
 
 /**
  * An abstract class used to implement clocks that return their readings as [Double] values in the specified [unit].
  */
-public abstract class DoubleReadingClock(protected val unit: DurationUnit) : Clock {
-    protected abstract fun reading(): Double
+public abstract class AbstractDoubleClock(protected val unit: DurationUnit) : Clock {
+    protected abstract fun read(): Double
 
     override fun mark(): ClockMark = object : ClockMark {
-        val startedAt = reading()
-        override fun elapsed(): Duration = (reading() - startedAt).toDuration(this@DoubleReadingClock.unit)
+        val startedAt = read()
+        override fun elapsed(): Duration = (read() - startedAt).toDuration(this@AbstractDoubleClock.unit)
     }
 }
 
@@ -43,18 +43,18 @@ public class TestClock(
     @JsName("readingValue")
     var reading: Long = 0L,
     unit: DurationUnit = DurationUnit.NANOSECONDS
-) : LongReadingClock(unit) {
-    override fun reading(): Long = reading
+) : AbstractLongClock(unit) {
+    override fun read(): Long = reading
 }
 
 /*
 public interface WallClock {
     fun currentTimeMilliseconds(): Long
 
-    companion object : WallClock, LongReadingClock() {
+    companion object : WallClock, AbstractLongClock(unit = DurationUnit.MILLISECONDS) {
         override fun currentTimeMilliseconds(): Long = System.currentTimeMillis()
-        override fun reading(): Long = System.currentTimeMillis()
-        override val unit: DurationUnit get() = DurationUnit.MILLISECONDS
+        override fun read(): Long = System.currentTimeMillis()
+        override fun toString(): String = "WallClock(System.currentTimeMillis())"
     }
 }
 */

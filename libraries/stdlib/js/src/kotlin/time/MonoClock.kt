@@ -39,12 +39,12 @@ internal class HrTimeClock(val process: Process) : Clock {
     override fun toString(): String = "Clock(process.hrtime())"
 }
 
-internal class PerformanceClock(val performance: Performance) : DoubleReadingClock(unit = DurationUnit.MILLISECONDS) {
-    override fun reading(): Double = performance.now()
+internal class PerformanceClock(val performance: Performance) : AbstractDoubleClock(unit = DurationUnit.MILLISECONDS) {
+    override fun read(): Double = performance.now()
     override fun toString(): String = "Clock(self.performance.now())"
 }
 
-internal object DateNowClock : DoubleReadingClock(unit = DurationUnit.MILLISECONDS) {
-    override fun reading(): Double = kotlin.js.Date.now()
+internal object DateNowClock : AbstractDoubleClock(unit = DurationUnit.MILLISECONDS) {
+    override fun read(): Double = kotlin.js.Date.now()
     override fun toString(): String = "Clock(Date.now())"
 }

@@ -18,10 +18,6 @@ public interface Clock {
      * Marks a time point on this clock.
      */
     fun mark(): ClockMark
-
-    companion object {
-        val Default: Clock get() = MonoClock
-    }
 }
 
 /**
