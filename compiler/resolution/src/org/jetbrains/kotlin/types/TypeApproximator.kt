@@ -286,11 +286,7 @@ abstract class AbstractTypeApproximator(val ctx: TypeSystemInferenceExtensionCon
 
             // Once NI will be more stabilized, we'll use more specific type
 
-            else -> {
-                val projection = type.typeConstructorProjection()
-                if (projection.isStarProjection()) intersectTypes(supertypes.toList())
-                else projection.getType()
-            }
+            else -> type.typeConstructorProjection().getType()//.unwrap()
         }
         val baseSubType = type.lowerType() ?: nothingType()
 
