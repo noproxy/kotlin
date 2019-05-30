@@ -37,7 +37,10 @@ buildscript {
 
         // a workaround to add another one buildSrc with Cidr-specific tools to Gradle classpath
         val kotlinUltimateBuildSrcDep = "org.jetbrains.kotlin.ultimate:buildSrc:1.0"
-        if (findProperty("cidrPluginsEnabled")?.toString()?.toBoolean() == true) {
+        val ultimateEnabled = findProperty("cidrPluginsEnabled")?.toString()?.toBoolean()
+            ?: findProperty("intellijUltimateEnabled")?.toString()?.toBoolean()
+            ?: false
+        if (ultimateEnabled) {
             logger.info("Adding buildscript classpath dependency \"$kotlinUltimateBuildSrcDep\" in build.gradle.kts")
             classpath(kotlinUltimateBuildSrcDep)
         } else {
