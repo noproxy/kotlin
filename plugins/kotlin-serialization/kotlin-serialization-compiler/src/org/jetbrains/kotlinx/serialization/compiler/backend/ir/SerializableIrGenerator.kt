@@ -13,8 +13,6 @@ import org.jetbrains.kotlin.ir.declarations.IrClass
 import org.jetbrains.kotlin.ir.declarations.IrProperty
 import org.jetbrains.kotlin.ir.declarations.IrValueParameter
 import org.jetbrains.kotlin.ir.expressions.IrExpression
-import org.jetbrains.kotlin.ir.expressions.IrStatementOrigin
-import org.jetbrains.kotlin.ir.expressions.impl.IrGetValueImpl
 import org.jetbrains.kotlin.ir.expressions.impl.IrDelegatingConstructorCallImpl
 import org.jetbrains.kotlin.ir.util.SymbolTable
 import org.jetbrains.kotlin.ir.util.TypeTranslator
@@ -128,7 +126,7 @@ class SerializableIrGenerator(
     ): Int {
         check(superClass.isInternalSerializable)
         val superCtorRef = compilerContext.externalSymbols.referenceClass(superClass).owner.serializableSyntheticConstructor()
-        val superProperties = SerializableProperties(superClass, bindingContext).serializableProperties
+        val superProperties = bindingContext.serializablePropertiesFor(superClass).serializableProperties
         val superSlots = superProperties.bitMaskSlotCount()
         val arguments = allValueParameters.subList(0, superSlots) +
                     allValueParameters.subList(propertiesStart, propertiesStart + superProperties.size) +
