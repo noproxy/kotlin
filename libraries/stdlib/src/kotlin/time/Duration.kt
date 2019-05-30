@@ -15,10 +15,11 @@ private val storageUnit = DurationUnit.NANOSECONDS
  * A negative duration is possible in a situation when the second instant is earlier than the first one.
  * An infinite duration value [Duration.INFINITE] can be used to represent infinite timeouts.
  *
- * To construct a duration use either the extension function [toDuration] available on [Int], [Long] and [Double] numeric types,
- * or the extension properties [hours], [minutes], [seconds] and so on.
+ * To construct a duration use either the extension function [toDuration],
+ * or the extension properties [hours], [minutes], [seconds] and so on,
+ * available on [Int], [Long] and [Double] numeric types.
  *
- * To get the value of this duration expressed in the specified [duration units][DurationUnit]
+ * To get the value of this duration expressed in a particular [duration units][DurationUnit]
  * use the functions [toInt], [toLong] and [toDouble]
  * or the properties [inHours], [inMinutes], [inSeconds], [inNanoseconds] and so on.
  */
