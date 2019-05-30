@@ -181,8 +181,9 @@ class DurationTest {
         assertTrue((-Duration.INFINITE).isInfinite())
         assertTrue(Double.POSITIVE_INFINITY.nanoseconds.isInfinite())
 
-        assertTrue(Double.MAX_VALUE.seconds.isInfinite()) // days overflow to infinite
-        assertTrue((-Double.MAX_VALUE).seconds.isInfinite()) // days overflow to infinite
+        // seconds converted to nanoseconds overflow to infinite
+        assertTrue(Double.MAX_VALUE.seconds.isInfinite())
+        assertTrue((-Double.MAX_VALUE).seconds.isInfinite())
     }
 
 
