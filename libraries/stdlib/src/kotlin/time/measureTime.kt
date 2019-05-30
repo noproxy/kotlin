@@ -10,7 +10,7 @@ import kotlin.contracts.*
 /**
  * Executes the given [action] and returns the duration of elapsed time interval.
  *
- * The elapsed duration is measured according to [MonoClock].
+ * The elapsed time is measured with [MonoClock].
  */
 public inline fun measureTime(action: () -> Unit): Duration {
     contract {
@@ -23,7 +23,7 @@ public inline fun measureTime(action: () -> Unit): Duration {
 /**
  * Executes the given [action] and returns the duration of elapsed time interval.
  *
- * The duration is measured according to the specified `this` [Clock] instance.
+ * The elapsed time is measured with the specified `this` [Clock] instance.
  */
 public inline fun Clock.measureTime(action: () -> Unit): Duration {
     contract {
@@ -48,7 +48,7 @@ public data class TimedValue<T>(val value: T, val duration: Duration)
  * Executes the given [action] and returns an instance of [TimedValue] class, containing both
  * the result of the [action] execution and the duration of elapsed time interval.
  *
- * The elapsed duration is measured according to [MonoClock].
+ * The elapsed time is measured with [MonoClock].
  */
 public inline fun <T> measureTimedValue(action: () -> T): TimedValue<T> {
     contract {
@@ -62,7 +62,7 @@ public inline fun <T> measureTimedValue(action: () -> T): TimedValue<T> {
  * Executes the given [action] and returns an instance of [TimedValue] class, containing both
  * the result of the [action] execution and the duration of elapsed time interval.
  *
- * The elapsed duration is measured according to the specified `this` [Clock] instance.
+ * The elapsed time is measured with the specified `this` [Clock] instance.
  */
 public inline fun <T> Clock.measureTimedValue(action: () -> T): TimedValue<T> {
     contract {
