@@ -234,8 +234,8 @@ def isTeamcityBuild = hasProperty("teamcity") || System.getenv("TEAMCITY_VERSION
 def includeUltimate = hasProperty("intellijUltimateEnabled") && intellijUltimateEnabled != 'false'
 if (isTeamcityBuild || includeUltimate) {
     include(
-            ":ultimate",
-            ":ultimate:ultimate-runner"
+            "kotlin-ultimate:ultimate",
+            "kotlin-ultimate:ultimate:ultimate-runner"
     )
 }
 
