@@ -3,7 +3,7 @@
  * Use of this source code is governed by the Apache 2.0 license that can be found in the license/LICENSE.txt file.
  */
 
-package kotlinx.metadata.util
+package kotlinx.metadata
 
 /**
  * Assigns the contents of [collection] into this list. After this function completes, the list and [collection]
@@ -12,10 +12,10 @@ package kotlinx.metadata.util
  * Useful for rewriting contents of any repeated Km* element represented by a [MutableList], e.g.:
  *
  *     val klass: KmClass
- *     klass.functions.assign(...)
+ *     klass.functions.assignFrom(...)
  *
  */
-fun <T> MutableList<T>.assign(collection: Collection<T>) {
+fun <T> MutableList<T>.assignFrom(collection: Collection<T>) {
     clear()
     addAll(collection)
 }
