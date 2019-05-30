@@ -16,11 +16,11 @@ object SerializationPluginErrorsRendering : DefaultErrorMessages.Extension {
     init {
         MAP.put(
             SerializationErrors.INLINE_CLASSES_NOT_SUPPORTED,
-            "Inline classes are not supported by serialization framework yet."
+            "Inline classes are not supported by serialization framework yet"
         )
         MAP.put(
             SerializationErrors.SERIALIZABLE_ANNOTATION_IGNORED,
-            "@Serializable annotation would be ignored because it is impossible to serialize automatically interfaces or enums. " +
+            "@Serializable annotation would be ignored because it is impossible to serialize automatically interfaces or enums" +
                     "Provide serializer manually via e.g. companion object"
         )
         MAP.put(
@@ -29,17 +29,17 @@ object SerializationPluginErrorsRendering : DefaultErrorMessages.Extension {
         )
         MAP.put(
             SerializationErrors.PRIMARY_CONSTRUCTOR_PARAMETER_IS_NOT_A_PROPERTY,
-            "This class is not serializable automatically because it has primary constructor parameters which are not properties."
+            "This class is not serializable automatically because it has primary constructor parameters which are not properties"
         )
         MAP.put(
             SerializationErrors.DUPLICATE_SERIAL_NAME,
-            "Serializable class has duplicate serial name of property ''{0}'', either in it or its supertypes.",
+            "Serializable class has duplicate serial name of property ''{0}'', either in it or its supertypes",
             Renderers.STRING
         )
         MAP.put(
             SerializationErrors.SERIALIZER_NOT_FOUND,
-            "Serializer has not been found for type of this property. " +
-                    "To use context serializer as fallback, explicitly annotate element with @ContextualSerialization"
+            "Serializer has not been found for this type" +
+                    "To use context serializer as fallback, explicitly annotate type or property with @ContextualSerialization"
         )
         MAP.put(
             SerializationErrors.SERIALIZER_NULLABILITY_INCOMPATIBLE,

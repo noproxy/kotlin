@@ -35,30 +35,33 @@ class SerializationPluginDeclarationChecker : DeclarationChecker {
     override fun check(declaration: KtDeclaration, descriptor: DeclarationDescriptor, context: DeclarationCheckerContext) {
         if (descriptor !is ClassDescriptor) return
 
-        checkCanBeSerializedInternally(descriptor, context.trace)
+        if (!canBeSerializedInternally(descriptor, context.trace)) return
         val props = buildSerializableProperties(descriptor, context.trace) ?: return
         checkTransients(declaration as KtPureClassOrObject, context.trace)
         analyzePropertiesSerializers(context.trace, descriptor, props.serializableProperties)
     }
 
-    private fun checkCanBeSerializedInternally(descriptor: ClassDescriptor, trace: BindingTrace) {
-        if (!descriptor.annotations.hasAnnotation(SerializationAnnotations.serializableAnnotationFqName)) return
+    private fun canBeSerializedInternally(descriptor: ClassDescriptor, trace: BindingTrace): Boolean {
+        if (!descriptor.annotations.hasAnnotation(SerializationAnnotations.serializableAnnotationFqName)) return false
 
         if (descriptor.isInline) {
             trace.reportOnSerializableAnnotation(descriptor, SerializationErrors.INLINE_CLASSES_NOT_SUPPORTED)
-            return
+            return false
         }
-        if (!descriptor.hasSerializableAnnotationWithoutArgs) return
+        if (!descriptor.hasSerializableAnnotationWithoutArgs) return false
 
         if (!descriptor.isInternalSerializable && !descriptor.hasCompanionObjectAsSerializer) {
             trace.reportOnSerializableAnnotation(descriptor, SerializationErrors.SERIALIZABLE_ANNOTATION_IGNORED)
+            return false
         }
 
         // check that we can instantiate supertype
         val superClass = descriptor.getSuperClassOrAny()
         if (!superClass.isInternalSerializable && superClass.constructors.singleOrNull { it.valueParameters.size == 0 } == null) {
             trace.reportOnSerializableAnnotation(descriptor, SerializationErrors.NON_SERIALIZABLE_PARENT_MUST_HAVE_NOARG_CTOR)
+            return false
         }
+        return true
     }
 
     private fun buildSerializableProperties(descriptor: ClassDescriptor, trace: BindingTrace): SerializableProperties? {
@@ -149,7 +152,7 @@ class SerializationPluginDeclarationChecker : DeclarationChecker {
         ktType: KtTypeReference,
         trace: BindingTrace
     ) {
-        if (type.genericIndex != null) return
+        if (type.genericIndex != null) return // type arguments always have serializer stored in class' field
         val element = ktType.typeElement ?: return
         if (type.isInlineClassType()) {
             trace.reportFromPlugin(
